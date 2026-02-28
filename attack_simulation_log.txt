@@ -1,0 +1,28 @@
+[SIMULATION REPORT 2026-02-28]
+Target: Rujira Ghost Vault (CosmWasm)
+Vulnerability: S-722 (Instantaneous Utilization Manipulation)
+
+[INITIAL STATE]
+- Pool Liquidity: 200,000 tokens
+- Pool Debt: 180,000 tokens
+- Utilization: 90%
+- APY: 15.4%
+
+[ACTION: FLASH LOAN DEPOSIT]
+- Injected: 500,000 tokens
+- New Liquidity: 700,000 tokens
+- New Utilization: 25.7%
+- New APY: 0.1% (MIN_RATE triggered)
+
+[ACTION: BORROW]
+- Position size: 100,000 tokens
+- Locked Interest: 0.1%
+
+[ACTION: WITHDRAW & REPAY]
+- Flash Loan repaid. 
+- Liquidity returned to 200,000.
+- Pool APY jumped back to 15.4%.
+
+[RESULT]
+Attacker secured a 100k loan at 1/150th of the intended market rate. 
+Yield leakage for depositors: ~15.3% APY loss on 100k position.
