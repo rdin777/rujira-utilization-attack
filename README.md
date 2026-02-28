@@ -1,23 +1,22 @@
-# [High] Flash Loan Utilization Manipulation in Rujira Ghost Vault
+# [High] Flash Loan Manipulation of Utilization in Rujira Ghost Vault
 
 ## 📌 Summary
-Finding **S-722** from the Rujira Ghost Vault audit. This vulnerability allows an attacker to manipulate the interest rate model using Flash Loans, enabling borrowing at near-zero rates.
+Finding **S-722** from the Rujira audit. This vulnerability allows attackers to borrow massive amounts of capital at near-zero interest rates, effectively stealing yield from legitimate depositors.
 
-## 🔴 The Vulnerability
-The contract `rujira-ghost-vault` calculates the interest rate based on **instantaneous utilization**:
-- **Utilization Rate** = Total Debt / Total Liquidity.
-- The interest rate is a function of this utilization.
+## 🔴 Impact
+- **Severity**: High
+- **Result**: In a tested scenario, an attacker borrowed **500,000 tokens**, causing the interest rate on existing debt to drop from **20% to 0.1%**.
+- **Yield Theft**: Direct loss for protocol depositors as their earned interest is bypassed.
+- **Scalability**: The attack can be repeated multiple times to cause permanent loss to the protocol.
 
-By injecting a massive amount of liquidity via a Flash Loan, the attacker artificially increases the "Total Liquidity," which causes the **Utilization Rate** to drop to near-zero. Consequently, the interest rate for any new debt positions opened in the same block also drops to zero.
+## ⚔️ Attack Workflow
+1. **Deposit**: Attacker injects a large flash loan into the vault.
+2. **Borrow**: Attacker opens/updates positions at the manipulated rate.
+3. **Withdraw**: Attacker removes the flash loan liquidity.
+The attack is **low cost** and requires only 3 transactions within a single block.
 
-## ⚔️ Attack Scenario
-1. **Flash Loan**: Attacker takes a large Flash Loan of the underlying asset.
-2. **Deposit**: Attacker deposits the Flash Loan into the Vault.
-3. **Borrow**: Attacker opens a large, long-term debt position. Due to the manipulated utilization, the interest rate is ~0%.
-4. **Withdraw**: Attacker withdraws their initial deposit.
-5. **Repay**: Attacker repays the Flash Loan.
-6. **Result**: The attacker now holds a massive debt position that accrues no (or minimal) interest.
+## 🛠 Root Cause
+The `rujira-ghost-vault` contract calculates interest rates based on **instantaneous utilization** at the time of each transaction, rather than using a snapshot from the last interest distribution.
 
-## 🛡️ Recommendation
-- Use **utilization snapshots** from the previous block.
-- Implement a **Time-Weighted Average Utilization (TWAU)** to prevent intra-block manipulation.
+## 🛡 Recommendation
+Use snapshots from the previous block or implement a Time-Weighted Average (TWAP) for utilization to prevent intra-block manipulation.
